@@ -1,0 +1,10 @@
+{
+  "name": "Shah & Co.",
+  "description": "Luxury real estate portal with interactive map search, dynamic custom property fields, mortgage calculator, buyer & seller suites, and admin management.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
