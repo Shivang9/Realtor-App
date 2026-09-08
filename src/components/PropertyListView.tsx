@@ -90,60 +90,10 @@ export const PropertyListView: React.FC<PropertyListViewProps> = ({
 
   return (
     <div className="space-y-10 pb-16">
-      {/* HERO SECTION matching Hearth & Key */}
-      <section className="pt-8 sm:pt-12 px-4 sm:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8">
-          
-          {/* Left: Greeting & Editorial Heading */}
-          <div className="space-y-4 max-w-2xl">
-            <div className="text-xs sm:text-[13px] font-bold uppercase tracking-[0.2em] text-[#C85A32] flex items-center space-x-2">
-              <span>GOOD MORNING, MAYA</span>
-              <span>☀️</span>
-            </div>
-
-            <h1 className="text-4xl sm:text-6xl font-normal tracking-tight text-[#1D2421] leading-[1.08]">
-              <span className="font-serif-luxury block">Find a place</span>
-              <span className="font-serif-luxury italic text-[#D95D39] block mt-1">that feels like you.</span>
-            </h1>
-
-            <p className="text-stone-600 text-sm sm:text-base font-light max-w-lg leading-relaxed pt-1">
-              Curated homes, local insight, and a smoother way to move.
-            </p>
-          </div>
-
-          {/* Right: THE LOCAL EDIT Card matching screenshot */}
-          <div 
-            onClick={onSelectGuide}
-            className="group lg:w-72 bg-[#E6EDE8] rounded-2xl p-5 border border-[#D3DED6] shadow-xs cursor-pointer hover:shadow-md hover:border-[#BFCEC3] transition-all shrink-0 flex flex-col justify-between"
-          >
-            <div className="flex items-start justify-between">
-              {/* Abstract icon badge */}
-              <div className="w-14 h-14 rounded-2xl bg-[#D6E3D9] flex items-center justify-center text-[#3D5C4B] relative overflow-hidden border border-[#C5D6CA]">
-                <div className="w-6 h-6 rounded-full bg-[#3D5C4B]/20 absolute -top-1 -right-1" />
-                <div className="w-5 h-5 rounded-full bg-[#3D5C4B] flex items-center justify-center text-white text-[10px] font-bold">
-                  ✦
-                </div>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#476755]">
-                THE LOCAL EDIT
-              </span>
-            </div>
-
-            <div className="pt-4 space-y-1">
-              <h3 className="font-serif-luxury text-xl font-bold text-[#1D2421] group-hover:text-[#D95D39] transition-colors">
-                September in Northwood
-              </h3>
-              <div className="text-xs font-semibold text-[#3D5C4B] flex items-center space-x-1 group-hover:translate-x-0.5 transition-transform">
-                <span>Explore guide</span>
-                <span>↗</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* FLOATING MASTER SEARCH CONTAINER matching screenshot */}
-        <div className="mt-8 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-5 sm:p-6 space-y-5">
+      {/* MASTER SEARCH & PROPERTY DISCOVERY */}
+      <section className="pt-6 sm:pt-8 px-4 sm:px-8 max-w-7xl mx-auto">
+        {/* FLOATING MASTER SEARCH CONTAINER */}
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200/80 p-5 sm:p-6 space-y-5">
           {/* Search Tabs: Buy / Rent / Sell */}
           <div className="flex items-center space-x-6 border-b border-stone-100 pb-3 text-sm font-semibold">
             <button

@@ -44,6 +44,14 @@ export interface AgentInfo {
   active?: boolean;
 }
 
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'super_admin' | 'broker' | 'agent';
+  lastLogin?: string;
+}
+
 export interface Coordinates {
   lat: number;
   lng: number;

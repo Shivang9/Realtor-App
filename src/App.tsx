@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Property, CustomFieldDefinition, AgentInfo } from './types';
+import { Property, CustomFieldDefinition, AgentInfo, AdminUser } from './types';
 import { apiService } from './services/apiService';
 import { INITIAL_PROPERTIES, INITIAL_CUSTOM_FIELDS, INITIAL_AGENTS } from './data/mockData';
 
 // Layout Components
 import { Navbar } from './components/Navbar';
+import { AdminLoginModal } from './components/AdminLoginModal';
 
 // Section Views
 import { PropertyListView } from './components/PropertyListView';
@@ -29,7 +30,9 @@ import {
   Clock, 
   CheckCircle2, 
   ArrowRight,
-  X
+  X,
+  Lock,
+  LogOut
 } from 'lucide-react';
 
 export default function App() {
@@ -37,6 +40,27 @@ export default function App() {
   const [adminInitialTab, setAdminInitialTab] = useState<'properties' | 'agents' | 'fields' | 'leads'>('properties');
   const [userRole, setUserRole] = useState<'buyer' | 'seller'>('buyer');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  
+  // Admin Authentication State
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('shahco_admin_auth');
+      return !!stored;
+    } catch {
+      return false;
+    }
+  });
+
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    try {
+      const stored = localStorage.getItem('shahco_admin_auth');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   
   const [properties, setProperties] = useState<Property[]>(INITIAL_PROPERTIES);
   const [customFields, setCustomFields] = useState<CustomFieldDefinition[]>(INITIAL_CUSTOM_FIELDS);
@@ -103,12 +127,38 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLoginSuccess = (admin: AdminUser) => {
+    setIsAdminLoggedIn(true);
+    setAdminUser(admin);
+    setCurrentTab('admin');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminLoggedIn(false);
+    setAdminUser(null);
+    try {
+      localStorage.removeItem('shahco_admin_auth');
+    } catch (e) {
+      console.error(e);
+    }
+    if (currentTab === 'admin') {
+      setCurrentTab('properties');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleTabSelect = (tab: string) => {
-    if (tab === 'admin-agents') {
-      setAdminInitialTab('agents');
-      setCurrentTab('admin');
-    } else if (tab === 'admin') {
-      setAdminInitialTab('properties');
+    if (tab === 'admin' || tab === 'admin-agents') {
+      if (!isAdminLoggedIn) {
+        setIsLoginModalOpen(true);
+        return;
+      }
+      if (tab === 'admin-agents') {
+        setAdminInitialTab('agents');
+      } else {
+        setAdminInitialTab('properties');
+      }
       setCurrentTab('admin');
     } else {
       setCurrentTab(tab);
@@ -140,6 +190,10 @@ export default function App() {
         toursCount={scheduledTours.length}
         userRole={userRole}
         onRoleChange={handleRoleChange}
+        isAdminLoggedIn={isAdminLoggedIn}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onAdminLogout={handleAdminLogout}
+        adminUser={adminUser}
       />
 
       {/* Main Content Area */}
@@ -334,15 +388,48 @@ export default function App() {
             <ContactUsSection />
           )}
 
-          {/* TAB: ADMIN (With full agent management & dynamic schema) */}
+          {/* TAB: ADMIN (Gated behind admin login) */}
           {currentTab === 'admin' && (
-            <AdminPortal
-              properties={properties}
-              customFields={customFields}
-              agents={agents}
-              initialTab={adminInitialTab}
-              onRefreshData={loadData}
-            />
+            isAdminLoggedIn ? (
+              <AdminPortal
+                properties={properties}
+                customFields={customFields}
+                agents={agents}
+                initialTab={adminInitialTab}
+                onRefreshData={loadData}
+                onExitToPublic={() => setCurrentTab('properties')}
+                onLogout={handleAdminLogout}
+                adminUser={adminUser}
+              />
+            ) : (
+              <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-6">
+                <div className="w-16 h-16 rounded-3xl bg-[#FAF6F4] border border-[#F0D5CC] flex items-center justify-center mx-auto text-[#D95D39] shadow-xs">
+                  <Lock className="w-8 h-8" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="font-serif-luxury text-3xl font-normal text-[#1D2421]">
+                    Brokerage Authentication Required
+                  </h2>
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-md mx-auto">
+                    The Administrative Console and property schema tools are restricted to authorized Shah & Co. partners, brokers, and listing coordinators.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#D95D39] hover:bg-[#C8502C] text-white font-bold text-xs uppercase tracking-wider transition shadow-sm cursor-pointer"
+                  >
+                    Sign In to Admin Portal
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab('properties')}
+                    className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white border border-stone-200 hover:border-stone-300 text-stone-700 text-xs font-bold transition cursor-pointer"
+                  >
+                    Return to Public Portfolio
+                  </button>
+                </div>
+              </div>
+            )
           )}
         </main>
 
@@ -371,7 +458,7 @@ export default function App() {
 
               {/* Quick Links */}
               <div className="space-y-2">
-                <div className="text-[#1D2421] font-bold text-xs uppercase tracking-wider">Navigation</div>
+                <div className="text-[#1D2421] font-bold text-xs uppercase tracking-wider">Public Navigation</div>
                 <ul className="space-y-1.5">
                   <li><button onClick={() => handleTabSelect('properties')} className="hover:text-[#D95D39] transition cursor-pointer">Featured Portfolio</button></li>
                   <li><button onClick={() => handleTabSelect('map-search')} className="hover:text-[#D95D39] transition cursor-pointer">Interactive Map Search</button></li>
@@ -385,10 +472,28 @@ export default function App() {
               <div className="space-y-2">
                 <div className="text-[#1D2421] font-bold text-xs uppercase tracking-wider">Brokerage Console</div>
                 <ul className="space-y-1.5">
-                  <li><button onClick={() => handleTabSelect('admin-agents')} className="hover:text-[#D95D39] text-[#D95D39] font-semibold transition cursor-pointer">Manage Advisory Agents</button></li>
-                  <li><button onClick={() => handleTabSelect('admin')} className="hover:text-[#D95D39] transition cursor-pointer">Property Catalog & Schema</button></li>
-                  <li><button onClick={() => handleTabSelect('admin')} className="hover:text-[#D95D39] transition cursor-pointer">Custom Field Definitions</button></li>
-                  <li><button onClick={() => handleTabSelect('contact')} className="hover:text-[#D95D39] transition cursor-pointer">VIP Client Inquiries</button></li>
+                  {isAdminLoggedIn ? (
+                    <>
+                      <li><button onClick={() => handleTabSelect('admin-agents')} className="hover:text-[#D95D39] text-[#D95D39] font-semibold transition cursor-pointer">Manage Advisory Agents</button></li>
+                      <li><button onClick={() => handleTabSelect('admin')} className="hover:text-[#D95D39] transition cursor-pointer">Property Catalog & Schema</button></li>
+                      <li><button onClick={() => handleTabSelect('admin')} className="hover:text-[#D95D39] transition cursor-pointer">Dynamic Custom Fields</button></li>
+                      <li><button onClick={handleAdminLogout} className="text-rose-600 hover:underline font-semibold transition cursor-pointer flex items-center space-x-1"><span>Sign Out ({adminUser?.name || 'Admin'})</span></button></li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <button 
+                          onClick={() => setIsLoginModalOpen(true)} 
+                          className="hover:text-[#D95D39] text-stone-800 font-semibold transition cursor-pointer flex items-center space-x-1.5"
+                        >
+                          <Lock className="w-3.5 h-3.5 text-[#D95D39]" />
+                          <span>Admin / Staff Sign In</span>
+                        </button>
+                      </li>
+                      <li><button onClick={() => setIsLoginModalOpen(true)} className="hover:text-[#D95D39] text-stone-500 transition cursor-pointer">Listing & Schema Controls</button></li>
+                      <li><button onClick={() => handleTabSelect('contact')} className="hover:text-[#D95D39] transition cursor-pointer">VIP Client Inquiries</button></li>
+                    </>
+                  )}
                 </ul>
               </div>
 
@@ -421,6 +526,13 @@ export default function App() {
           onOpenMortgageCalculator={handleOpenMortgageFromDetail}
         />
       )}
+
+      {/* 5. Admin Authentication Modal */}
+      <AdminLoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
 
     </div>
   );

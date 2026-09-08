@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Property, CustomFieldDefinition, PropertyCategory, ContactSubmission, ValuationRequest, AgentInfo } from '../types';
+import { Property, CustomFieldDefinition, PropertyCategory, ContactSubmission, ValuationRequest, AgentInfo, AdminUser } from '../types';
 import { formatCurrency, formatNumber, getCategoryLabel } from '../utils/formatters';
 import { apiService } from '../services/apiService';
 import { 
@@ -30,7 +30,9 @@ import {
   UserCheck,
   MessageSquare,
   ExternalLink,
-  Search
+  Search,
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
 
 interface AdminPortalProps {
@@ -39,6 +41,9 @@ interface AdminPortalProps {
   agents?: AgentInfo[];
   initialTab?: 'properties' | 'agents' | 'fields' | 'leads';
   onRefreshData: () => void;
+  onExitToPublic?: () => void;
+  onLogout?: () => void;
+  adminUser?: AdminUser | null;
 }
 
 const AGENT_AVATAR_PRESETS = [
@@ -56,6 +61,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   agents = [],
   initialTab = 'properties',
   onRefreshData,
+  onExitToPublic,
+  onLogout,
+  adminUser
 }) => {
   const [activeTab, setActiveTab] = useState<'properties' | 'agents' | 'fields' | 'leads'>(initialTab);
 
@@ -467,13 +475,45 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </h1>
         </div>
 
-        {/* Global Action feedback toast */}
-        {actionFeedback && (
-          <div className="bg-[#EAEFE8] border border-[#D5DDD2] text-[#273B30] text-xs font-semibold px-4 py-2 rounded-xl flex items-center space-x-2 animate-in fade-in duration-200 shadow-xs">
-            <Check className="w-4 h-4 text-[#273B30]" />
-            <span>{actionFeedback}</span>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Global Action feedback toast */}
+          {actionFeedback && (
+            <div className="bg-[#EAEFE8] border border-[#D5DDD2] text-[#273B30] text-xs font-semibold px-4 py-2 rounded-xl flex items-center space-x-2 animate-in fade-in duration-200 shadow-xs">
+              <Check className="w-4 h-4 text-[#273B30]" />
+              <span>{actionFeedback}</span>
+            </div>
+          )}
+
+          {adminUser && (
+            <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-stone-100 border border-stone-200 text-xs text-stone-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-semibold">{adminUser.name}</span>
+              <span className="text-[10px] text-stone-500 uppercase tracking-wider">({adminUser.role.replace('_', ' ')})</span>
+            </div>
+          )}
+
+          {onExitToPublic && (
+            <button
+              onClick={onExitToPublic}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white border border-stone-200 hover:border-stone-300 text-stone-700 hover:text-stone-950 text-xs font-bold transition shadow-2xs cursor-pointer"
+              title="Return to public customer view"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Exit to Public Site</span>
+            </button>
+          )}
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white border border-stone-200 hover:border-rose-300 text-stone-600 hover:text-rose-600 text-xs font-bold transition shadow-2xs cursor-pointer"
+              title="Sign out of Admin Portal"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs Switcher */}

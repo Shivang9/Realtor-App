@@ -16,8 +16,12 @@ import {
   GraduationCap,
   Heart,
   Calendar,
-  Settings
+  Settings,
+  Lock,
+  LogOut,
+  User
 } from 'lucide-react';
+import { AdminUser } from '../types';
 
 interface NavbarProps {
   currentTab: string;
@@ -26,6 +30,10 @@ interface NavbarProps {
   toursCount?: number;
   userRole?: 'buyer' | 'seller';
   onRoleChange?: (role: 'buyer' | 'seller') => void;
+  isAdminLoggedIn: boolean;
+  onOpenLoginModal: () => void;
+  onAdminLogout: () => void;
+  adminUser?: AdminUser | null;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -34,7 +42,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   savedCount,
   toursCount = 1,
   userRole = 'buyer',
-  onRoleChange
+  onRoleChange,
+  isAdminLoggedIn,
+  onOpenLoginModal,
+  onAdminLogout,
+  adminUser
 }) => {
   const [buyersOpen, setBuyersOpen] = useState(false);
   const [sellersOpen, setSellersOpen] = useState(false);
@@ -383,19 +395,48 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
-            {/* Admin Quick Action */}
-            <button
-              onClick={() => navigateTo('admin')}
-              className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border cursor-pointer ${
-                currentTab === 'admin'
-                  ? 'bg-[#1D2421] text-white border-[#1D2421]'
-                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-300 shadow-2xs'
-              }`}
-              title="Admin Listing & Custom Field Builder"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-stone-500" />
-              <span>Admin</span>
-            </button>
+            {/* Admin / Login Action */}
+            {isAdminLoggedIn ? (
+              <div className="flex items-center space-x-1.5">
+                <button
+                  onClick={() => navigateTo('admin')}
+                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border cursor-pointer ${
+                    currentTab === 'admin'
+                      ? 'bg-[#1D2421] text-white border-[#1D2421] shadow-xs'
+                      : 'bg-[#FAF6F4] text-[#D95D39] border-[#F0D5CC] hover:bg-[#F3EBE7]'
+                  }`}
+                  title="Admin Listing & Team Console"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Admin Panel</span>
+                </button>
+
+                <div className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 border border-stone-200 text-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-semibold text-stone-700 max-w-[110px] truncate text-[11px]">
+                    {adminUser?.name || 'Admin'}
+                  </span>
+                </div>
+
+                <button
+                  onClick={onAdminLogout}
+                  className="p-2 rounded-xl border border-stone-200 text-stone-500 hover:text-rose-600 hover:border-rose-200 bg-white shadow-2xs transition cursor-pointer"
+                  title="Sign out of Admin Portal"
+                  aria-label="Sign out of Admin Portal"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onOpenLoginModal}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border border-stone-200 hover:border-stone-300 bg-white text-stone-700 hover:text-[#1D2421] shadow-2xs cursor-pointer"
+                title="Brokerage Partner / Admin Login"
+              >
+                <Lock className="w-3.5 h-3.5 text-[#D95D39]" />
+                <span>Admin Login</span>
+              </button>
+            )}
 
             {/* Book Tour Button */}
             <button
@@ -556,13 +597,45 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>Contact Advisory Concierge</span>
           </button>
 
-          <button
-            onClick={() => navigateTo('admin')}
-            className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center space-x-2.5 bg-[#1D2421] text-white shadow-xs"
-          >
-            <ShieldCheck className="w-4 h-4 text-[#D95D39]" />
-            <span>Admin Management Console</span>
-          </button>
+          {/* Admin / Login in Mobile Drawer */}
+          {isAdminLoggedIn ? (
+            <div className="pt-2 border-t border-stone-200 space-y-2">
+              <button
+                onClick={() => navigateTo('admin')}
+                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-between bg-[#1D2421] text-white shadow-xs"
+              >
+                <span className="flex items-center space-x-2.5">
+                  <ShieldCheck className="w-4 h-4 text-[#D95D39]" />
+                  <span>Admin Management Console</span>
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono">Logged in</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onAdminLogout();
+                }}
+                className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 flex items-center space-x-2.5 transition"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out of Admin Portal</span>
+              </button>
+            </div>
+          ) : (
+            <div className="pt-2 border-t border-stone-200">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenLoginModal();
+                }}
+                className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center space-x-2.5 bg-white border border-stone-200 hover:border-stone-300 text-stone-800 shadow-2xs"
+              >
+                <Lock className="w-4 h-4 text-[#D95D39]" />
+                <span>Admin / Broker Login</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>
