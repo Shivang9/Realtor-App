@@ -33,7 +33,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     <div
       id={`property-card-${property.id}`}
       onClick={() => onSelect(property)}
-      className="group bg-white rounded-none sm:rounded-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col border border-stone-200/90"
+      className="group bg-white rounded-none sm:rounded-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col border border-stone-200/90 isolate"
     >
       {/* 1. Large High-Resolution Property Photo matching Image 1 */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">

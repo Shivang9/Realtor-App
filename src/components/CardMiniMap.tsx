@@ -76,21 +76,8 @@ export const CardMiniMap: React.FC<CardMiniMapProps> = ({ coordinates, neighborh
   }, [coordinates.lat, coordinates.lng]);
 
   return (
-    <div className="relative w-full h-full min-h-[135px] bg-[#E5E9EC] overflow-hidden pointer-events-none">
-      <div ref={containerRef} className="w-full h-full z-0" />
-      
-      {/* Subtle Google style Map attribution matching screenshot */}
-      <div className="absolute bottom-1 left-1.5 z-[400] flex items-center space-x-1 pointer-events-none select-none">
-        <span className="text-[11px] font-sans font-bold tracking-tight text-[#3c4043] drop-shadow-xs">
-          Google
-        </span>
-      </div>
-
-      <div className="absolute bottom-1 right-1.5 z-[400] pointer-events-none select-none">
-        <span className="text-[9px] font-sans text-stone-700 bg-white/70 px-1 py-0.2 rounded-2xs shadow-2xs">
-          Map Data
-        </span>
-      </div>
+    <div className="relative w-full h-full min-h-[135px] bg-[#E5E9EC] overflow-hidden pointer-events-none isolate">
+      <div ref={containerRef} className="w-full h-full" />
     </div>
   );
 };
